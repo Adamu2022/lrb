@@ -1,4 +1,13 @@
-import { IsString, IsBoolean, IsOptional, IsObject, IsEnum, IsNumber, IsEmail } from 'class-validator';
+import {
+  IsString,
+  IsBoolean,
+  IsOptional,
+  IsObject,
+  IsEnum,
+  IsNumber,
+  IsEmail,
+  IsArray,
+} from 'class-validator';
 
 // DTOs for notification settings
 export class NotificationChannelsDto {

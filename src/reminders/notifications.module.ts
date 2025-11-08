@@ -6,6 +6,7 @@ import { NotificationSettings } from '../entities/notification-settings.entity';
 import { NotificationLog } from '../entities/notification-log.entity';
 import { AuditLog } from '../entities/audit-log.entity';
 import { EncryptionService } from './encryption.service';
+import { NetworkDiagnosticsService } from './network-diagnostics.service';
 import { NotificationSettingsValidationPipe } from './notification-validation.pipe';
 import { NotificationExceptionFilter } from './notification-exception.filter';
 
@@ -14,7 +15,13 @@ import { NotificationExceptionFilter } from './notification-exception.filter';
     TypeOrmModule.forFeature([NotificationSettings, NotificationLog, AuditLog]),
   ],
   controllers: [NotificationSettingsController],
-  providers: [NotificationsService, EncryptionService, NotificationSettingsValidationPipe, NotificationExceptionFilter],
+  providers: [
+    NotificationsService,
+    EncryptionService,
+    NetworkDiagnosticsService,
+    NotificationSettingsValidationPipe,
+    NotificationExceptionFilter,
+  ],
   exports: [NotificationsService, EncryptionService],
 })
 export class NotificationsModule {}

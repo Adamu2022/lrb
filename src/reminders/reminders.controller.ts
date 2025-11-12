@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { RemindersService } from './reminders.service';
 import { CreateReminderDto, UpdateReminderDto } from '../dtos/reminder.dto';
 import { Reminder } from '../entities/reminder.entity';

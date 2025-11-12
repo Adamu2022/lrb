@@ -25,7 +25,8 @@ export class NotificationsService {
     this.termiiApiKey = this.configService.get<string>('TERMII_API_KEY')!;
     this.termiiSenderId = this.configService.get<string>('TERMII_SENDER_ID')!;
     this.brevoApiKey = this.configService.get<string>('BREVO_API_KEY')!;
-    this.brevoSenderEmail = this.configService.get<string>('BREVO_SENDER_EMAIL')!;
+    this.brevoSenderEmail =
+      this.configService.get<string>('BREVO_SENDER_EMAIL')!;
     this.brevoSenderName = this.configService.get<string>('BREVO_SENDER_NAME')!;
   }
 
@@ -44,11 +45,17 @@ export class NotificationsService {
       const { data } = await axios.post(url, payload);
       this.logger.log(`✅ SMS sent to ${phoneNumber}: ${JSON.stringify(data)}`);
     } catch (error: any) {
-      this.logger.error(`❌ Failed to send SMS to ${phoneNumber}: ${error?.message ?? error}`);
+      this.logger.error(
+        `❌ Failed to send SMS to ${phoneNumber}: ${error?.message ?? error}`,
+      );
     }
   }
 
-  async sendEmailReminder(email: string, subject: string, message: string): Promise<void> {
+  async sendEmailReminder(
+    email: string,
+    subject: string,
+    message: string,
+  ): Promise<void> {
     try {
       const url = 'https://api.brevo.com/v3/smtp/email';
       const payload = {
@@ -59,12 +66,17 @@ export class NotificationsService {
       };
 
       const response = await axios.post(url, payload, {
-        headers: { 'api-key': this.brevoApiKey, 'Content-Type': 'application/json' },
+        headers: {
+          'api-key': this.brevoApiKey,
+          'Content-Type': 'application/json',
+        },
       });
 
       this.logger.log(`✅ Email sent to ${email}: ${response.status}`);
     } catch (error: any) {
-      this.logger.error(`❌ Failed to send Email to ${email}: ${error?.message ?? error}`);
+      this.logger.error(
+        `❌ Failed to send Email to ${email}: ${error?.message ?? error}`,
+      );
     }
   }
 
@@ -118,9 +130,10 @@ export class NotificationsService {
     }
 
     if (settings.sms_config?.encrypted_twilio_token) {
-      settings.sms_config.encrypted_twilio_token = this.encryptionService.encrypt(
-        settings.sms_config.encrypted_twilio_token,
-      );
+      settings.sms_config.encrypted_twilio_token =
+        this.encryptionService.encrypt(
+          settings.sms_config.encrypted_twilio_token,
+        );
     }
 
     return this.notificationSettingsRepository.save(settings);
@@ -128,20 +141,22 @@ export class NotificationsService {
 
   getMaskedSettings(settings: NotificationSettings): any {
     const masked = { ...settings };
-    
+
     // Mask sensitive data
     if (masked.email_config?.encrypted_password) {
-      masked.email_config.encrypted_password = this.encryptionService.maskSensitiveData(
-        masked.email_config.encrypted_password,
-      );
+      masked.email_config.encrypted_password =
+        this.encryptionService.maskSensitiveData(
+          masked.email_config.encrypted_password,
+        );
     }
-    
+
     if (masked.sms_config?.encrypted_twilio_token) {
-      masked.sms_config.encrypted_twilio_token = this.encryptionService.maskSensitiveData(
-        masked.sms_config.encrypted_twilio_token,
-      );
+      masked.sms_config.encrypted_twilio_token =
+        this.encryptionService.maskSensitiveData(
+          masked.sms_config.encrypted_twilio_token,
+        );
     }
-    
+
     return masked;
   }
 
@@ -159,16 +174,19 @@ export class NotificationsService {
             'This is a test notification from the Lecture Reminder System.',
           );
           return { success: true, message: 'Test email sent successfully' };
-          
+
         case 'sms':
           await this.sendSMSReminder(
             testRecipient,
             'This is a test SMS from the Lecture Reminder System.',
           );
           return { success: true, message: 'Test SMS sent successfully' };
-          
+
         default:
-          return { success: false, message: `Unsupported provider: ${provider}` };
+          return {
+            success: false,
+            message: `Unsupported provider: ${provider}`,
+          };
       }
     } catch (error) {
       this.logger.error(`Test notification failed: ${error.message}`);
@@ -189,7 +207,7 @@ export class NotificationsService {
         ', ',
       )}`,
     );
-    
+
     // For now, we'll just log the payload
     this.logger.log(`Notification payload: ${JSON.stringify(payload)}`);
   }

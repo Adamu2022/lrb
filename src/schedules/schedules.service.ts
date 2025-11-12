@@ -22,13 +22,15 @@ export class SchedulesService {
       where: { id: createScheduleDto.lecturerId },
     });
     if (!lecturer) {
-      throw new NotFoundException(`Lecturer with ID ${createScheduleDto.lecturerId} not found`);
+      throw new NotFoundException(
+        `Lecturer with ID ${createScheduleDto.lecturerId} not found`,
+      );
     }
 
     const course = await this.coursesRepository.findOne({
       where: { id: createScheduleDto.courseId },
     });
-    
+
     // Create schedule object with proper structure
     const scheduleData: Partial<Schedule> = {
       ...createScheduleDto,
@@ -63,9 +65,12 @@ export class SchedulesService {
     return schedule;
   }
 
-  async update(id: number, updateScheduleDto: Partial<CreateScheduleDto>): Promise<Schedule> {
+  async update(
+    id: number,
+    updateScheduleDto: Partial<CreateScheduleDto>,
+  ): Promise<Schedule> {
     const schedule = await this.findOne(id);
-    
+
     if (updateScheduleDto.lecturerId) {
       const lecturer = await this.usersRepository.findOne({
         where: { id: updateScheduleDto.lecturerId },

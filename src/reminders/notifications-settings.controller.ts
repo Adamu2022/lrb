@@ -285,7 +285,8 @@ export class NotificationSettingsController {
       config,
       testNotificationDto.test_to ||
         testNotificationDto.test_email ||
-        testNotificationDto.test_device_token,
+        testNotificationDto.test_device_token ||
+        '',
     );
   }
 

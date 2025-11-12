@@ -25,7 +25,7 @@ export class RemindersController {
 
   @Get(':id')
   @Roles('super_admin', 'lecturer', 'student')
-  findOne(@Param('id') id: string): Promise<Reminder> {
+  findOne(@Param('id') id: string): Promise<Reminder | null> {
     return this.remindersService.findOne(+id);
   }
 
@@ -34,13 +34,13 @@ export class RemindersController {
   update(
     @Param('id') id: string,
     @Body() updateReminderDto: UpdateReminderDto,
-  ): Promise<Reminder> {
+  ): Promise<Reminder | null> {
     return this.remindersService.update(+id, updateReminderDto);
   }
 
   @Delete(':id')
   @Roles('super_admin')
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id') id: string): Promise<Reminder | null> {
     return this.remindersService.remove(+id);
   }
 

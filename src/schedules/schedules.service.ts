@@ -29,14 +29,20 @@ export class SchedulesService {
       where: { id: createScheduleDto.courseId },
     });
     
-    const schedule = this.schedulesRepository.create({
+    // Create schedule object with proper structure
+    const scheduleData: Partial<Schedule> = {
       ...createScheduleDto,
       lecturer,
-      course,
       courseTitle: course?.title || createScheduleDto.courseTitle,
       courseCode: course?.code || createScheduleDto.courseCode,
-    });
+    };
 
+    // Only add course if it exists
+    if (course) {
+      scheduleData.course = course;
+    }
+
+    const schedule = this.schedulesRepository.create(scheduleData);
     return this.schedulesRepository.save(schedule);
   }
 

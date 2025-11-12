@@ -75,6 +75,33 @@ export class EnrollmentsService {
     });
   }
 
+  async update(id: number, updateEnrollmentDto: CreateEnrollmentDto): Promise<Enrollment> {
+    const enrollment = await this.findOne(id);
+    
+    // Get the student
+    const student = await this.usersRepository.findOne({
+      where: { id: updateEnrollmentDto.studentId, role: 'student' },
+    });
+    
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${updateEnrollmentDto.studentId} not found`);
+    }
+    
+    // Get the course
+    const course = await this.coursesRepository.findOne({
+      where: { id: updateEnrollmentDto.courseId },
+    });
+    
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${updateEnrollmentDto.courseId} not found`);
+    }
+    
+    enrollment.student = student;
+    enrollment.course = course;
+    
+    return this.enrollmentsRepository.save(enrollment);
+  }
+
   async remove(id: number): Promise<void> {
     await this.enrollmentsRepository.delete(id);
   }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from '../dtos/enrollment.dto';
 import { Enrollment } from '../entities/enrollment.entity';
@@ -39,6 +39,12 @@ export class EnrollmentsController {
   @Roles('super_admin', 'lecturer', 'student')
   findByCourse(@Param('courseId') courseId: string): Promise<Enrollment[]> {
     return this.enrollmentsService.findByCourse(+courseId);
+  }
+
+  @Put(':id')
+  @Roles('super_admin', 'lecturer')
+  update(@Param('id') id: string, @Body() updateEnrollmentDto: CreateEnrollmentDto): Promise<Enrollment> {
+    return this.enrollmentsService.update(+id, updateEnrollmentDto);
   }
 
   @Delete(':id')

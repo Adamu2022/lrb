@@ -1,89 +1,54 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, Logger } from '@nestjs/common';
+import { NotificationsService } from './notifications.service';
 import { Repository } from 'typeorm';
-import { Reminder } from '../entities/reminder.entity';
-import { CreateReminderDto, UpdateReminderDto } from '../dtos/reminder.dto';
-import { Schedule } from '../entities/schedule.entity';
-import { User } from '../entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ReminderLog } from '../entities/reminder-log.entity';
 
 @Injectable()
 export class RemindersService {
+  private readonly logger = new Logger(RemindersService.name);
+
   constructor(
-    @InjectRepository(Reminder)
-    private remindersRepository: Repository<Reminder>,
-    @InjectRepository(Schedule)
-    private schedulesRepository: Repository<Schedule>,
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private readonly notificationsService: NotificationsService,
+    @InjectRepository(ReminderLog)
+    private readonly reminderLogRepo: Repository<ReminderLog>,
   ) {}
 
-  async create(createReminderDto: CreateReminderDto): Promise<Reminder> {
-    const reminder = new Reminder();
-    reminder.channel = createReminderDto.channel;
-    reminder.status = 'pending';
-    
-    // Get the schedule
-    const schedule = await this.schedulesRepository.findOne({
-      where: { id: createReminderDto.scheduleId },
-    });
-    
-    if (!schedule) {
-      throw new NotFoundException(`Schedule with ID ${createReminderDto.scheduleId} not found`);
+  /**
+   * Sends a reminder to a student for a lecture and records it in ReminderLog
+   */
+  async remindStudent(student: any, lecture: any, reminderType = 'lecture_30min') {
+    const message = `Hello ${student.name}, your lecture "${lecture.title}" starts at ${new Date(lecture.startTime).toLocaleString()}. Please be on time.`;
+    const subject = `Lecture Reminder: ${lecture.title}`;
+
+    try {
+      await this.notificationsService.sendReminder(
+        { email: student.email, phoneNumber: student.phone },
+        subject,
+        message,
+      );
+
+      // record that reminder was sent
+      const log = this.reminderLogRepo.create({
+        lectureId: lecture.id,
+        studentId: student.id,
+        reminderType,
+      });
+      await this.reminderLogRepo.save(log);
+
+      this.logger.log(`📩 Reminder sent to ${student.name} for "${lecture.title}"`);
+    } catch (error: any) {
+      this.logger.error(`❌ Failed to send reminder to ${student.name}: ${error?.message ?? error}`);
     }
-    
-    // Get the user
-    const user = await this.usersRepository.findOne({
-      where: { id: createReminderDto.userId },
+  }
+
+  /**
+   * Check whether a reminder of this type was already sent for that lecture & student
+   */
+  async alreadySent(lectureId: number, studentId: number, reminderType = 'lecture_30min') {
+    const count = await this.reminderLogRepo.count({
+      where: { lectureId, studentId, reminderType },
     });
-    
-    if (!user) {
-      throw new NotFoundException(`User with ID ${createReminderDto.userId} not found`);
-    }
-    
-    reminder.schedule = schedule;
-    reminder.user = user;
-    
-    return this.remindersRepository.save(reminder);
-  }
-
-  async findAll(): Promise<Reminder[]> {
-    return this.remindersRepository.find({ relations: ['schedule', 'user'] });
-  }
-
-  async findOne(id: number): Promise<Reminder> {
-    const reminder = await this.remindersRepository.findOne({
-      where: { id },
-      relations: ['schedule', 'user'],
-    });
-    
-    if (!reminder) {
-      throw new NotFoundException(`Reminder with ID ${id} not found`);
-    }
-    
-    return reminder;
-  }
-
-  async update(id: number, updateReminderDto: UpdateReminderDto): Promise<Reminder> {
-    const reminder = await this.findOne(id);
-    Object.assign(reminder, updateReminderDto);
-    return this.remindersRepository.save(reminder);
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.remindersRepository.delete(id);
-  }
-
-  async findByUser(userId: number): Promise<Reminder[]> {
-    return this.remindersRepository.find({
-      where: { user: { id: userId } },
-      relations: ['schedule', 'user'],
-    });
-  }
-
-  async findBySchedule(scheduleId: number): Promise<Reminder[]> {
-    return this.remindersRepository.find({
-      where: { schedule: { id: scheduleId } },
-      relations: ['schedule', 'user'],
-    });
+    return count > 0;
   }
 }

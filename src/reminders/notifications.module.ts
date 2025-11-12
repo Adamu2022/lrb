@@ -1,27 +1,16 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationsService } from './notifications.service';
-import { NotificationSettingsController } from './notifications-settings.controller';
-import { NotificationSettings } from '../entities/notification-settings.entity';
-import { NotificationLog } from '../entities/notification-log.entity';
-import { AuditLog } from '../entities/audit-log.entity';
 import { EncryptionService } from './encryption.service';
-import { NetworkDiagnosticsService } from './network-diagnostics.service';
-import { NotificationSettingsValidationPipe } from './notification-validation.pipe';
-import { NotificationExceptionFilter } from './notification-exception.filter';
+import { NotificationSettings } from '../entities/notification-settings.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([NotificationSettings, NotificationLog, AuditLog]),
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forFeature([NotificationSettings]),
   ],
-  controllers: [NotificationSettingsController],
-  providers: [
-    NotificationsService,
-    EncryptionService,
-    NetworkDiagnosticsService,
-    NotificationSettingsValidationPipe,
-    NotificationExceptionFilter,
-  ],
-  exports: [NotificationsService, EncryptionService],
+  providers: [NotificationsService, EncryptionService],
+  exports: [NotificationsService],
 })
 export class NotificationsModule {}

@@ -12,15 +12,12 @@ import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { NotificationsModule } from './reminders/notifications.module';
-import { NotificationSettings } from './entities/notification-settings.entity';
-import { NotificationLog } from './entities/notification-log.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(typeOrmConfig),
-    TypeOrmModule.forFeature([NotificationSettings, NotificationLog]),
     UsersModule,
     AuthModule,
     SchedulesModule,

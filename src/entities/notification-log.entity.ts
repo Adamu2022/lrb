@@ -30,5 +30,5 @@ export class NotificationLog extends BaseEntity {
   lastAttemptAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
-declare  createdAt: Date;
+  declare createdAt: Date;
 }

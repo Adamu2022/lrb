@@ -50,33 +50,28 @@ export class ReminderSchedulerService {
       // Send reminder to the lecturer
       const lecturer = schedule.lecturer;
 
-      // Prepare payload for notifications
-      const payload = {
-        userName: lecturer.firstName,
-        userEmail: lecturer.email,
-        userPhone: lecturer.phone,
-        courseTitle: schedule.course?.title || 'Unknown Course',
-        courseCode: schedule.course?.code || 'Unknown Code',
-        date: schedule.date,
-        time: schedule.time,
-        venue: schedule.venue,
-        instructorName: `${lecturer.firstName} ${lecturer.lastName}`,
-        courseId: schedule.course?.id,
-        scheduleId: schedule.id,
-      };
+      // Prepare message content
+      const message = `Hello ${lecturer.firstName},
 
-      // Get enabled channels for lecturer
-      const lecturerChannels = this.getEnabledChannels(lecturer);
+This is a reminder for your lecture:
+Course: ${schedule.course?.title || 'Unknown Course'} (${schedule.course?.code || 'Unknown Code'})
+Date: ${schedule.date}
+Time: ${schedule.time}
+Venue: ${schedule.venue}
+
+Best regards,
+Lecture Reminder System`;
+      const subject = `Lecture Reminder: ${schedule.course?.title || 'Unknown Course'}`;
 
       // Send notifications to lecturer
-      if (lecturerChannels.length > 0) {
-        await this.notificationsService.sendNotification(
-          lecturer.id,
-          schedule.id,
-          lecturerChannels,
-          payload,
-        );
-      }
+      await this.notificationsService.sendReminder(
+        {
+          email: lecturer.email,
+          phoneNumber: lecturer.phone,
+        },
+        subject,
+        message,
+      );
 
       // Find enrolled students for this course
       let students: User[] = [];
@@ -90,31 +85,36 @@ export class ReminderSchedulerService {
 
       // Send reminders to students
       for (const student of students) {
-        // Prepare payload for student notifications
-        const studentPayload = {
-          ...payload,
-          userName: student.firstName,
-          userEmail: student.email,
-          userPhone: student.phone,
-        };
+        // Prepare message content for students
+        const studentMessage = `Hello ${student.firstName},
 
-        // Get enabled channels for student
-        const studentChannels = this.getEnabledChannels(student);
+This is a reminder for your upcoming lecture:
+Course: ${schedule.course?.title || 'Unknown Course'} (${schedule.course?.code || 'Unknown Code'})
+Date: ${schedule.date}
+Time: ${schedule.time}
+Venue: ${schedule.venue}
+
+Best regards,
+Lecture Reminder System`;
+        const studentSubject = `Lecture Reminder: ${schedule.course?.title || 'Unknown Course'}`;
 
         // Send notifications to student
-        if (studentChannels.length > 0) {
-          await this.notificationsService.sendNotification(
-            student.id,
-            schedule.id,
-            studentChannels,
-            studentPayload,
-          );
-        }
+        await this.notificationsService.sendReminder(
+          {
+            email: student.email,
+            phoneNumber: student.phone,
+          },
+          studentSubject,
+          studentMessage,
+        );
       }
     }
   }
 
   private getEnabledChannels(user: User): string[] {
+    // Always include SMS channel by default, regardless of user preferences
+    const channels: string[] = ['sms'];
+    
     const preferences = user.notificationPreferences || {
       emailEnabled: true,
       smsEnabled: true,
@@ -122,9 +122,7 @@ export class ReminderSchedulerService {
       calendarEnabled: true,
     };
 
-    const channels: string[] = [];
     if (preferences.emailEnabled) channels.push('email');
-    if (preferences.smsEnabled) channels.push('sms');
     if (preferences.pushEnabled) channels.push('push');
     if (preferences.calendarEnabled) channels.push('calendar');
 

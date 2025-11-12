@@ -13,6 +13,7 @@ import { Enrollment } from '../entities/enrollment.entity';
 import { NotificationSettings } from '../entities/notification-settings.entity';
 import { NotificationLog } from '../entities/notification-log.entity';
 import { AuditLog } from '../entities/audit-log.entity';
+import { ReminderLog } from '../entities/reminder-log.entity';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AuditLog } from '../entities/audit-log.entity';
       NotificationSettings,
       NotificationLog,
       AuditLog,
+      ReminderLog,
     ]),
   ],
   providers: [

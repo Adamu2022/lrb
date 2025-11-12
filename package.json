@@ -21,7 +21,10 @@
     "create-admin": "ts-node src/scripts/create-admin-user.ts",
     "test-db": "ts-node src/scripts/test-db-connection.ts",
     "test-db-create-admin": "ts-node src/scripts/test-db-and-create-admin.ts",
-    "test-network": "ts-node src/scripts/test-network-connectivity.ts"
+    "test-network": "ts-node src/scripts/test-network-connectivity.ts",
+    "test-notifications": "ts-node src/scripts/test-notifications.ts",
+    "send-test-notification": "ts-node src/scripts/send-test-notification.ts",
+    "verify-config": "ts-node src/scripts/verify-config.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

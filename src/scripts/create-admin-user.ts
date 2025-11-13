@@ -1,5 +1,13 @@
 import { DataSource } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { Schedule } from '../entities/schedule.entity';
+import { Course } from '../entities/course.entity';
+import { Enrollment } from '../entities/enrollment.entity';
+import { Reminder } from '../entities/reminder.entity';
+import { NotificationSettings } from '../entities/notification-settings.entity';
+import { NotificationLog } from '../entities/notification-log.entity';
+import { ReminderLog } from '../entities/reminder-log.entity';
+import { AuditLog } from '../entities/audit-log.entity';
 import * as bcrypt from 'bcryptjs';
 import { config } from 'dotenv';
 
@@ -8,7 +16,7 @@ config();
 
 async function createAdminUser() {
   console.log('Creating admin user...');
-  
+
   // Create a DataSource instance with proper configuration
   const dataSource = new DataSource({
     type: 'postgres',
@@ -17,54 +25,68 @@ async function createAdminUser() {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || '08080397908',
     database: process.env.DB_NAME || 'lecture_reminder',
-    entities: [User],
+    entities: [
+      User,
+      Schedule,
+      Course,
+      Enrollment,
+      Reminder,
+      NotificationSettings,
+      NotificationLog,
+      ReminderLog,
+      AuditLog,
+    ],
     synchronize: false,
     logging: true,
+    ssl: process.env.DB_HOST
+      ? {
+          rejectUnauthorized: false,
+        }
+      : false,
   });
-  
+
   try {
     // Initialize the data source
     console.log('Initializing data source...');
     await dataSource.initialize();
     console.log('Data Source has been initialized!');
-    
+
     // Create repository for User entity
     const userRepository = dataSource.getRepository(User);
-    
+
     // Check if admin user already exists
     console.log('Checking if admin user already exists...');
     const existingUser = await userRepository.findOne({
-      where: { email: 'admin@local.com' }
+      where: { email: 'admin@tech.com' },
     });
-    
+
     if (existingUser) {
       console.log('Admin user already exists!');
       await dataSource.destroy();
       return;
     }
-    
+
     // Create new admin user
     console.log('Creating new admin user...');
     const adminUser = new User();
     adminUser.firstName = 'Admin';
     adminUser.lastName = 'User';
-    adminUser.email = 'admin@local.com';
+    adminUser.email = 'admin@tech.com';
     adminUser.role = 'super_admin';
     adminUser.phone = '';
-    
+
     // Hash the password
     console.log('Hashing password...');
     const salt = await bcrypt.genSalt(10);
-    adminUser.password = await bcrypt.hash('123456', salt);
-    
+    adminUser.password = await bcrypt.hash('admin', salt);
+
     // Save the user to database
     console.log('Saving user to database...');
     await userRepository.save(adminUser);
-    
+
     console.log('Admin user created successfully!');
-    console.log('Email: admin@local.com');
-    console.log('Password: 123456');
-    
+    console.log('Email: admin@tech.com');
+    console.log('Password: admin');
   } catch (error) {
     console.error('Error creating admin user:', error.message);
     console.error('Stack:', error.stack);

@@ -32,4 +32,9 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   ],
   synchronize: true, // Set to false in production
   logging: false,
+  ssl: process.env.DB_HOST
+    ? {
+        rejectUnauthorized: false,
+      }
+    : false,
 };

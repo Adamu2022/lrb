@@ -18,7 +18,7 @@ async function sendTestSMS() {
   try {
     const url = 'https://api.ng.termii.com/api/sms/send';
     const payload = {
-      to: '+1234567890', // Replace with your phone number for testing
+      to: '+2348106057557', // Replace with your phone number for testing
       from: termiiSenderId,
       sms: 'This is a test SMS from the Lecture Reminder System.',
       type: 'plain',

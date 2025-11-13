@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { User, NotificationPreferences } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/user.dto';
 import * as bcrypt from 'bcryptjs';
@@ -14,37 +19,48 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     // Check if user with this email already exists
-    const existingUser = await this.usersRepository.findOne({ 
-      where: { email: createUserDto.email } 
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: createUserDto.email },
     });
-    
+
     if (existingUser) {
-      throw new ConflictException(`User with email ${createUserDto.email} already exists`);
+      throw new ConflictException(
+        `User with email ${createUserDto.email} already exists`,
+      );
     }
-    
+
     // Validate required fields
-    if (!createUserDto.firstName || !createUserDto.lastName || !createUserDto.email || !createUserDto.password) {
-      throw new BadRequestException('First name, last name, email, and password are required');
+    if (
+      !createUserDto.firstName ||
+      !createUserDto.lastName ||
+      !createUserDto.email ||
+      !createUserDto.password
+    ) {
+      throw new BadRequestException(
+        'First name, last name, email, and password are required',
+      );
     }
-    
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(createUserDto.email)) {
       throw new BadRequestException('Invalid email format');
     }
-    
+
     // Validate password strength
-    if (createUserDto.password.length < 6) {
-      throw new BadRequestException('Password must be at least 6 characters long');
+    if (createUserDto.password.length < 5) {
+      throw new BadRequestException(
+        'Password must be at least 5 characters long',
+      );
     }
-    
+
     const user = new User();
     user.firstName = createUserDto.firstName;
     user.lastName = createUserDto.lastName;
     user.email = createUserDto.email;
     user.phone = createUserDto.phone;
     user.role = createUserDto.role;
-    
+
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(createUserDto.password, salt);
@@ -58,7 +74,11 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     try {
-      return await this.usersRepository.find();
+      return await this.usersRepository.find({
+        where: {
+          role: Not('super_admin'),
+        },
+      });
     } catch (error) {
       throw new BadRequestException('Failed to fetch users: ' + error.message);
     }
@@ -68,7 +88,7 @@ export class UsersService {
     if (!id || id <= 0) {
       throw new BadRequestException('Invalid user ID');
     }
-    
+
     try {
       const user = await this.usersRepository.findOne({ where: { id } });
       if (!user) {
@@ -87,13 +107,13 @@ export class UsersService {
     if (!email) {
       throw new BadRequestException('Email is required');
     }
-    
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       throw new BadRequestException('Invalid email format');
     }
-    
+
     try {
       const user = await this.usersRepository.findOne({ where: { email } });
       if (!user) {
@@ -112,7 +132,7 @@ export class UsersService {
     if (!id || id <= 0) {
       throw new BadRequestException('Invalid user ID');
     }
-    
+
     try {
       const result = await this.usersRepository.delete(id);
       if (result.affected === 0) {
@@ -128,21 +148,25 @@ export class UsersService {
 
   // Add methods for managing notification preferences
   async updateNotificationPreferences(
-    userId: number, 
-    preferences: NotificationPreferences
+    userId: number,
+    preferences: NotificationPreferences,
   ): Promise<User> {
     const user = await this.findOne(userId);
     user.notificationPreferences = preferences;
     return this.usersRepository.save(user);
   }
 
-  async getNotificationPreferences(userId: number): Promise<NotificationPreferences> {
+  async getNotificationPreferences(
+    userId: number,
+  ): Promise<NotificationPreferences> {
     const user = await this.findOne(userId);
-    return user.notificationPreferences || {
-      emailEnabled: true,
-      smsEnabled: true,
-      pushEnabled: true,
-      calendarEnabled: true
-    };
+    return (
+      user.notificationPreferences || {
+        emailEnabled: true,
+        smsEnabled: true,
+        pushEnabled: true,
+        calendarEnabled: true,
+      }
+    );
   }
 }

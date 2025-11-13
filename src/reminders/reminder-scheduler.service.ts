@@ -24,6 +24,36 @@ export class ReminderSchedulerService {
     private notificationsService: NotificationsService,
   ) {}
 
+  /**
+   * Format Nigerian phone numbers from local format (08122566881) to international format (+2348122566881)
+   * @param phoneNumber The phone number to format
+   * @returns The formatted phone number
+   */
+  private formatNigerianPhoneNumber(phoneNumber: string): string {
+    if (!phoneNumber) return phoneNumber;
+
+    // Remove all non-digit characters
+    const cleaned = phoneNumber.replace(/\D/g, '');
+
+    // If it's already in international format, return as is
+    if (cleaned.startsWith('234')) {
+      return `+${cleaned}`;
+    }
+
+    // If it starts with 0, replace with +234
+    if (cleaned.startsWith('0')) {
+      return `+234${cleaned.substring(1)}`;
+    }
+
+    // If it's 10 digits and doesn't start with 0, assume it's missing the leading 0
+    if (cleaned.length === 10) {
+      return `+234${cleaned}`;
+    }
+
+    // Return the original if we can't format it
+    return phoneNumber;
+  }
+
   @Cron(CronExpression.EVERY_5_MINUTES)
   async handleLectureReminders() {
     this.logger.log('⏰ Checking for upcoming lectures to remind students...');
@@ -74,7 +104,7 @@ export class ReminderSchedulerService {
           await this.notificationsService.sendReminder(
             {
               email: lecturer.email,
-              phoneNumber: lecturer.phone,
+              phoneNumber: this.formatNigerianPhoneNumber(lecturer.phone),
             },
             subject,
             message,
@@ -110,7 +140,7 @@ export class ReminderSchedulerService {
           await this.notificationsService.sendReminder(
             {
               email: student.email,
-              phoneNumber: student.phone,
+              phoneNumber: this.formatNigerianPhoneNumber(student.phone),
             },
             studentSubject,
             studentMessage,

@@ -18,7 +18,7 @@ async function sendTestSMS() {
   try {
     const url = 'https://api.ng.termii.com/api/sms/send';
     const payload = {
-      to: '+2348106057557', // Replace with your phone number for testing
+      to: '+2348149448552', // Replace with your phone number for testing
       from: termiiSenderId,
       sms: 'This is a test SMS from the Lecture Reminder System.',
       type: 'plain',
@@ -52,7 +52,7 @@ async function sendTestEmail() {
     const url = 'https://api.brevo.com/v3/smtp/email';
     const payload = {
       sender: { email: brevoSenderEmail, name: brevoSenderName },
-      to: [{ email: 'test@example.com' }], // Replace with your email for testing
+      to: [{ email: 'abumaryamalbarwi@gmail.com' }], // Replace with your email for testing
       subject: 'Test Email from Lecture Reminder System',
       htmlContent:
         '<p>This is a test email from the Lecture Reminder System.</p>',
